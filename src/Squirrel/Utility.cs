@@ -413,7 +413,7 @@ namespace Squirrel
                 return false;
             }
 
-            return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+            return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeFtp;
         }
 
         public static Uri AppendPathToUri(Uri uri, string path)
