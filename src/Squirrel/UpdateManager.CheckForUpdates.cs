@@ -51,7 +51,7 @@ namespace Squirrel
 
                 // Fetch the remote RELEASES file, whether it's a local dir or an
                 // HTTP URL
-                if (Utility.IsHttpUrl(updateUrlOrPath)) {
+                if (Utility.IsHttpUrl(updateUrlOrPath) || Utility.IsFtpUrl(updateUrlOrPath)) {
                     if (updateUrlOrPath.EndsWith("/")) {
                         updateUrlOrPath = updateUrlOrPath.Substring(0, updateUrlOrPath.Length - 1);
                     }
