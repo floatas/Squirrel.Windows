@@ -22,13 +22,21 @@ namespace Squirrel
             public async Task DownloadReleases(string updateUrlOrPath, IEnumerable<ReleaseEntry> releasesToDownload, Action<int> progress = null, IFileDownloader urlDownloader = null)
             {
                 progress = progress ?? (_ => { });
-                urlDownloader = urlDownloader ?? new FileDownloader();
+
+                if (urlDownloader == null && Utility.IsHttpUrl(updateUrlOrPath))
+                {
+                    urlDownloader = new FileDownloader();
+                }
+                else if (urlDownloader == null && Utility.IsFtpUrl(updateUrlOrPath))
+                {
+                    urlDownloader = new FtpFileDownloader();
+                }
                 var packagesDirectory = Path.Combine(rootAppDirectory, "packages");
 
                 double current = 0;
                 double toIncrement = 100.0 / releasesToDownload.Count();
 
-                if (Utility.IsHttpUrl(updateUrlOrPath)) {
+                if (Utility.IsHttpUrl(updateUrlOrPath) || Utility.IsFtpUrl(updateUrlOrPath)) {
                     // From Internet
                     await releasesToDownload.ForEachAsync(async x => {
                         var targetFile = Path.Combine(packagesDirectory, x.Filename);

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Splat;
 
 namespace Squirrel
@@ -95,6 +96,7 @@ namespace Squirrel
     {
         public Task DownloadFile(string url, string targetFile, Action<int> progress)
         {
+            url = HttpUtility.UrlDecode(url);
             if (url.Contains("?"))
             {
                 url = url.Substring(0, url.IndexOf("?"));
@@ -137,6 +139,7 @@ namespace Squirrel
 
         public Task<byte[]> DownloadUrl(string url)
         {
+            url = HttpUtility.UrlDecode(url);
             if (url.Contains("?"))
             {
                 url = url.Substring(0, url.IndexOf("?"));
