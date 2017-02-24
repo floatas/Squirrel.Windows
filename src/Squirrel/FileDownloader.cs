@@ -132,7 +132,7 @@ namespace Squirrel
                 }
             }
 
-            this.Log().Info("Downloading file ftp finihed: " + (url));
+            this.Log().Info("Downloading file ftp finished: " + (url));
 
             return Task.Delay(0);
         }
@@ -150,29 +150,27 @@ namespace Squirrel
             request.Method = WebRequestMethods.Ftp.DownloadFile;
 
             request.Credentials = new NetworkCredential("anonymous", "janeDoe@contoso.com");
+            var mem = new MemoryStream();
 
-            var response = (FtpWebResponse)request.GetResponse();
-
-            var content = new List<byte>();
-            using (var reader = new StreamReader(response.GetResponseStream()))
+            using (var response = (FtpWebResponse)request.GetResponse())
             {
-                while (true)
+                using (var reader = response.GetResponseStream())
                 {
-                    var buff = new char[2048];
-                    var read = reader.Read(buff, 0, buff.Length);
-                    if (read == 0)
+                    while (true)
                     {
-                        break;
+                        var buff = new byte[2048];
+                        var read = reader.Read(buff, 0, buff.Length);
+                        if (read == 0)
+                        {
+                            break;
+                        }
+                        mem.Write(buff, 0, read);
                     }
-                    content.AddRange(Encoding.UTF8.GetBytes(buff.Take(read).ToArray()));
                 }
             }
+            this.Log().Info("Downloading url ftp finished: " + url);
 
-            response.Close();
-            this.Log().Info("Finished downloadign ftp url: " + (url));
-
-
-            return Task.FromResult(content.ToArray());
+            return Task.FromResult(mem.ToArray());
         }
     }
 }
