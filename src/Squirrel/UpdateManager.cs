@@ -29,7 +29,7 @@ namespace Squirrel
 
         IDisposable updateLock;
 
-        public UpdateManager(string urlOrPath, 
+        public UpdateManager(string urlOrPath,
             string applicationName = null,
             string rootDirectory = null,
             IFileDownloader urlDownloader = null)
@@ -39,9 +39,17 @@ namespace Squirrel
 
             updateUrlOrPath = urlOrPath;
             this.applicationName = applicationName ?? UpdateManager.getApplicationName();
-            this.urlDownloader = urlDownloader ?? new FileDownloader();
+            if (urlDownloader != null)
+            {
+                this.urlDownloader = urlDownloader;
+            }
+            else
+            {
+                this.urlDownloader = (Utility.IsFtpUrl(urlOrPath) ? (IFileDownloader)new FtpFileDownloader() : new FileDownloader());
+            }
 
-            if (rootDirectory != null) {
+            if (rootDirectory != null)
+            {
                 this.rootAppDirectory = Path.Combine(rootDirectory, this.applicationName);
                 return;
             }
@@ -135,7 +143,8 @@ namespace Squirrel
             executable = executable ??
                 Path.GetDirectoryName(typeof(UpdateManager).Assembly.Location);
 
-            if (!executable.StartsWith(rootAppDirectory, StringComparison.OrdinalIgnoreCase)) {
+            if (!executable.StartsWith(rootAppDirectory, StringComparison.OrdinalIgnoreCase))
+            {
                 return null;
             }
 
@@ -152,29 +161,33 @@ namespace Squirrel
             installHelpers.KillAllProcessesBelongingToPackage();
         }
 
-        public string ApplicationName {
+        public string ApplicationName
+        {
             get { return applicationName; }
         }
 
-        public string RootAppDirectory {
+        public string RootAppDirectory
+        {
             get { return rootAppDirectory; }
         }
 
-        public bool IsInstalledApp {
+        public bool IsInstalledApp
+        {
             get { return Assembly.GetExecutingAssembly().Location.StartsWith(RootAppDirectory, StringComparison.OrdinalIgnoreCase); }
         }
 
         public void Dispose()
         {
             var disp = Interlocked.Exchange(ref updateLock, null);
-            if (disp != null) {
+            if (disp != null)
+            {
                 disp.Dispose();
             }
         }
 
         static bool exiting = false;
         public static void RestartApp(string exeToStart = null, string arguments = null)
-        { 
+        {
             // NB: Here's how this method works:
             //
             // 1. We're going to pass the *name* of our EXE and the params to 
@@ -201,9 +214,9 @@ namespace Squirrel
             Thread.Sleep(500);
             Environment.Exit(0);
         }
-        
+
         public static async Task<Process> RestartAppWhenExited(string exeToStart = null, string arguments = null)
-        { 
+        {
             // NB: Here's how this method works:
             //
             // 1. We're going to pass the *name* of our EXE and the params to 
@@ -224,7 +237,7 @@ namespace Squirrel
             var updateProcess = Process.Start(getUpdateExe(), String.Format("--processStartAndWait {0} {1}", exeToStart, argsArg));
 
             await Task.Delay(500);
-            
+
             return updateProcess;
         }
 
@@ -237,14 +250,16 @@ namespace Squirrel
             // * We're a C# EXE with Squirrel linked in
 
             var assembly = Assembly.GetEntryAssembly();
-            if (assemblyLocation == null && assembly == null) {
+            if (assemblyLocation == null && assembly == null)
+            {
                 // dunno lol
                 return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             }
 
             assemblyLocation = assemblyLocation ?? assembly.Location;
 
-            if (Path.GetFileName(assemblyLocation).Equals("update.exe", StringComparison.OrdinalIgnoreCase)) {
+            if (Path.GetFileName(assemblyLocation).Equals("update.exe", StringComparison.OrdinalIgnoreCase))
+            {
                 // NB: Both the "SquirrelTemp" case and the "App's folder" case 
                 // mean that the root app dir is one up
                 var oneFolderUpFromAppFolder = Path.Combine(Path.GetDirectoryName(assemblyLocation), "..");
@@ -257,7 +272,8 @@ namespace Squirrel
 
         ~UpdateManager()
         {
-            if (updateLock != null && !exiting) {
+            if (updateLock != null && !exiting)
+            {
                 throw new Exception("You must dispose UpdateManager!");
             }
         }
@@ -266,18 +282,23 @@ namespace Squirrel
         {
             if (updateLock != null) return Task.FromResult(updateLock);
 
-            return Task.Run(() => {
+            return Task.Run(() =>
+            {
                 var key = Utility.CalculateStreamSHA1(new MemoryStream(Encoding.UTF8.GetBytes(rootAppDirectory)));
 
                 IDisposable theLock;
-                try {
+                try
+                {
                     theLock = ModeDetector.InUnitTestRunner() ?
-                        Disposable.Create(() => {}) : new SingleGlobalInstance(key, TimeSpan.FromMilliseconds(2000));
-                } catch (TimeoutException) {
+                        Disposable.Create(() => { }) : new SingleGlobalInstance(key, TimeSpan.FromMilliseconds(2000));
+                }
+                catch (TimeoutException)
+                {
                     throw new TimeoutException("Couldn't acquire update lock, another instance may be running updates");
                 }
 
-                var ret = Disposable.Create(() => {
+                var ret = Disposable.Create(() =>
+                {
                     theLock.Dispose();
                     updateLock = null;
                 });
@@ -301,7 +322,8 @@ namespace Squirrel
             if (assembly != null &&
                 Path.GetFileName(assembly.Location).Equals("update.exe", StringComparison.OrdinalIgnoreCase) &&
                 assembly.Location.IndexOf("app-", StringComparison.OrdinalIgnoreCase) == -1 &&
-                assembly.Location.IndexOf("SquirrelTemp", StringComparison.OrdinalIgnoreCase) == -1) {
+                assembly.Location.IndexOf("SquirrelTemp", StringComparison.OrdinalIgnoreCase) == -1)
+            {
                 return Path.GetFullPath(assembly.Location);
             }
 
