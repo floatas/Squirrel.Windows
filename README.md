@@ -9,6 +9,13 @@ Squirrel is both a set of tools and a library, to completely manage both install
 
 Squirrel uses NuGet packages to create installation and update packages, which means that you probably already know most of what you need to create an installer.
 
+# Changes from original
+
+* **Updates from FTP** Update can be made from FTP urls.
+* **Download required files to create diff** New argument added ``--previous-releases-url=`` if files needed for diff are not found, they will be downloaded from this url.
+
+Nuget available at https://www.myget.org/feed/Packages/floatas
+
 ## What Do We Want?
 
 Windows apps should be as fast and as easy to install and update as apps like Google Chrome. From an app developer's side, it should be really straightforward to create an installer for my app, and publish updates to it, without having to jump through insane hoops. 
