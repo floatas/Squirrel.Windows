@@ -135,6 +135,7 @@ namespace Squirrel.Update
                     { "a=|process-start-args=", "Arguments that will be used when starting executable", v => processStartArgs = v, true},
                     { "l=|shortcut-locations=", "Comma-separated string of shortcut locations, e.g. 'Desktop,StartMenu'", v => shortcutArgs = v},
                     { "no-msi", "Don't generate an MSI package", v => noMsi = true},
+                    { "framework-version=", "Set the required .NET framework version, e.g. net461", v => frameworkVersion = v },
                     { "previous-releases-url=", "Location of previous releases", v => prevReleaseUrl = v},
                 };
 
@@ -188,9 +189,9 @@ namespace Squirrel.Update
                         ProcessStart(processStart, processStartArgs, shouldWait);
                         break;
 #endif
-                    case UpdateAction.Releasify:
-                        Releasify(target, releaseDir, packagesDir, bootstrapperExe, backgroundGif, signingParameters, baseUrl, setupIcon, !noMsi, prevReleaseUrl);
-                        break;
+                case UpdateAction.Releasify:
+                    Releasify(target, releaseDir, packagesDir, bootstrapperExe, backgroundGif, signingParameters, baseUrl, setupIcon, !noMsi, frameworkVersion, prevReleaseUrl);
+                    break;
                 }
             }
 
@@ -364,7 +365,7 @@ namespace Squirrel.Update
             }
         }
 
-        public void Releasify(string package, string targetDir = null, string packagesDir = null, string bootstrapperExe = null, string backgroundGif = null, string signingOpts = null, string baseUrl = null, string setupIcon = null, bool generateMsi = true, string prevReleaseUrl = null)
+        public void Releasify(string package, string targetDir = null, string packagesDir = null, string bootstrapperExe = null, string backgroundGif = null, string signingOpts = null, string baseUrl = null, string setupIcon = null, bool generateMsi = true, string frameworkVersion = null, string prevReleaseUrl = null)
         {
             ensureConsole();
 
@@ -484,9 +485,9 @@ namespace Squirrel.Update
 
             var writeZipToSetup = findExecutable("WriteZipToSetup.exe");
 
-            try
-            {
-                var result = Utility.InvokeProcessAsync(writeZipToSetup, String.Format("\"{0}\" \"{1}\"", targetSetupExe, zipPath), CancellationToken.None).Result;
+            try {
+                var arguments = String.Format("\"{0}\" \"{1}\" \"--set-required-framework\" \"{2}\"", targetSetupExe, zipPath, frameworkVersion);
+                var result = Utility.InvokeProcessAsync(writeZipToSetup, arguments, CancellationToken.None).Result;
                 if (result.Item1 != 0) throw new Exception("Failed to write Zip to Setup.exe!\n\n" + result.Item2);
             }
             catch (Exception ex)

@@ -49,7 +49,11 @@ namespace Squirrel
                 {
                     this.Log().Info("Downloading file: " + (failedUrl ?? url));
 
-                    await this.WarnIfThrows(() => wc.DownloadFileTaskAsync(failedUrl ?? url, targetFile),
+                    await this.WarnIfThrows(
+                        async () => {
+                            await wc.DownloadFileTaskAsync(failedUrl ?? url, targetFile);
+                            progress(100);
+                        },
                         "Failed downloading URL: " + (failedUrl ?? url));
                 }
                 catch (Exception)
