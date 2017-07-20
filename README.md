@@ -14,8 +14,17 @@ Squirrel uses NuGet packages to create installation and update packages, which m
 * **Updates from FTP** Update can be made from FTP urls.
 * **Download required files to create diff** New argument added ``--previous-releases-url=`` if files needed for diff are not found, they will be downloaded from this url.
 
-Nuget available at https://www.myget.org/feed/Packages/floatas
+Nuget available at https://www.myget.org/f/floatas
 
+
+Nuget.Config
+```
+  <packageSources>
+    <clear/>
+	<add key="myget" value="https://www.myget.org/f/floatas" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+  </packageSources>
+```
 ## What Do We Want?
 
 Windows apps should be as fast and as easy to install and update as apps like Google Chrome. From an app developer's side, it should be really straightforward to create an installer for my app, and publish updates to it, without having to jump through insane hoops. 
